@@ -7,6 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
+        (b'djecks', b'__first__'),
     ]
 
     operations = [
@@ -28,6 +29,7 @@ class Migration(migrations.Migration):
                 (b'items_url', models.URLField(blank=True)),
                 (b'title', models.CharField(max_length=255, blank=True)),
                 (b'repository', models.ForeignKey(to=b'djecks_omeka.Repository', to_field='id')),
+                (b'deck', models.ForeignKey(to_field='id', blank=True, to=b'djecks.Deck', null=True)),
             ],
             options={
             },

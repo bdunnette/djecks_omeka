@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        (b'cases', b'__first__'),
+        (b'djecks', b'__first__'),
         (b'djecks_omeka', b'0001_initial'),
     ]
 
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 (b'url', models.URLField()),
                 (b'files_url', models.URLField(blank=True)),
                 (b'collection', models.ForeignKey(to=b'djecks_omeka.Collection', to_field='id')),
-                (b'case', models.ForeignKey(to_field='id', blank=True, to=b'cases.Case', null=True)),
+                (b'case', models.ForeignKey(to_field='id', blank=True, to=b'djecks.Case', null=True)),
             ],
             options={
             },

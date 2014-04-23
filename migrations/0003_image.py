@@ -7,6 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
+        (b'djecks', b'__first__'),
         (b'djecks_omeka', b'0002_item'),
     ]
 
@@ -20,6 +21,7 @@ class Migration(migrations.Migration):
                 (b'image', models.ImageField(null=True, upload_to=b'omeka/images', blank=True)),
                 (b'image_annotated', models.ImageField(null=True, upload_to=b'omeka/images', blank=True)),
                 (b'item', models.ForeignKey(to=b'djecks_omeka.Item', to_field='id')),
+                (b'card', models.ForeignKey(to_field='id', blank=True, to=b'djecks.Card', null=True)),
             ],
             options={
             },
