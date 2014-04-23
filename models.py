@@ -79,12 +79,17 @@ def get_collection_items(instance, **kwargs):
             item, created = Item.objects.get_or_create(url=i['url'], collection = instance)
             item.title = get_title(i['element_texts'])
             item.files_url = i['files']['url']
-            case, created = Case.objects.get_or_create(title=item.title)
-            case.decks.add(instance.deck)
-            case.save()
-            item.case = case
             item.save()
-            
+
+@receiver(pre_save, sender=Item)
+def get_item_case(instance, **kwargs):
+    item_case, created = Case.objects.get_or_create(title=instance.title)
+    if instance.collection:
+        item_case.decks.add(instance.collection.deck)
+        item_case.save()
+    print item_case
+    instance.case = item_case
+                    
 @receiver(post_save, sender=Item)
 def get_item_images(instance, **kwargs):
     if instance.files_url:
