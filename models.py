@@ -1,7 +1,9 @@
 from django.dispatch import receiver
 from django.db.models.signals import pre_save, post_save
 from django.db import models
+
 from djecks.models import Deck, Case, Card
+
 import requests
 
 class Repository(models.Model):
@@ -16,6 +18,7 @@ class Collection(models.Model):
     title = models.CharField(max_length=255, blank=True)
     repository = models.ForeignKey(Repository)
     deck = models.ForeignKey(Deck, blank=True, null=True)
+ 
 
     def __unicode__(self):
         if self.title:
@@ -29,6 +32,7 @@ class Item(models.Model):
     files_url = models.URLField(blank=True)
     collection = models.ForeignKey(Collection)
     case = models.ForeignKey(Case, blank=True, null=True)
+ 
 
     def __unicode__(self):
         if self.title:
@@ -42,6 +46,7 @@ class Image(models.Model):
     image = models.ImageField(upload_to='omeka/images', blank=True, null=True)
     image_annotated = models.ImageField(upload_to='omeka/images', blank=True, null=True)
     item = models.ForeignKey(Item)
+ 
     #card = models.ForeignKey(Card, blank=True, null=True)
     
     def __unicode__(self):
