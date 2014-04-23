@@ -42,7 +42,7 @@ class Image(models.Model):
     image = models.ImageField(upload_to='omeka/images', blank=True, null=True)
     image_annotated = models.ImageField(upload_to='omeka/images', blank=True, null=True)
     item = models.ForeignKey(Item)
-    card = models.ForeignKey(Card, blank=True, null=True)
+    #card = models.ForeignKey(Card, blank=True, null=True)
     
     def __unicode__(self):
         if self.title:
