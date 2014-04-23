@@ -1,5 +1,5 @@
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import pre_save, post_save
 from django.db import models
 from djecks.models import Deck, Case, Card
 import requests
@@ -64,7 +64,13 @@ def get_repository_collections(instance, **kwargs):
         collection.items_url = c['items']['url']
         collection.title = get_title(c['element_texts'])
         collection.save()
-        
+    
+@receiver(pre_save, sender=Collection)
+def get_collection_deck(instance, **kwargs):
+    collection_deck, created = Deck.objects.get_or_create(title=instance.title)
+    print collection_deck
+    instance.deck = collection_deck
+
 @receiver(post_save, sender=Collection)
 def get_collection_items(instance, **kwargs):
     if instance.items_url:
@@ -73,11 +79,15 @@ def get_collection_items(instance, **kwargs):
             item, created = Item.objects.get_or_create(url=i['url'], collection = instance)
             item.title = get_title(i['element_texts'])
             item.files_url = i['files']['url']
+            case, created = Case.objects.get_or_create(title=item.title)
+            case.decks.add(instance.deck)
+            case.save()
+            item.case = case
             item.save()
             
 @receiver(post_save, sender=Item)
 def get_item_images(instance, **kwargs):
     if instance.files_url:
         files_json = requests.get(instance.files_url).json()
-        for f in files_json:
-            print f
+        #for f in files_json:
+            #print f
