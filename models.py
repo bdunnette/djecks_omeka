@@ -3,6 +3,7 @@ from django.db.models.signals import pre_save, post_save
 from django.db import models
 
 from djecks.models import Deck, Case, Card
+from djecks_anki.models import AnkiDeck
 
 import requests
 
@@ -18,7 +19,6 @@ class Collection(models.Model):
     title = models.CharField(max_length=255, blank=True)
     repository = models.ForeignKey(Repository)
     deck = models.ForeignKey(Deck, blank=True, null=True)
- 
 
     def __unicode__(self):
         if self.title:
@@ -33,7 +33,6 @@ class Item(models.Model):
     collection = models.ForeignKey(Collection)
     case = models.ForeignKey(Case, blank=True, null=True)
  
-
     def __unicode__(self):
         if self.title:
             return self.title
@@ -47,17 +46,18 @@ class Image(models.Model):
     image_annotated = models.ImageField(upload_to='omeka/images', blank=True, null=True)
     item = models.ForeignKey(Item)
  
-    #card = models.ForeignKey(Card, blank=True, null=True)
-    
     def __unicode__(self):
         if self.title:
             return self.title
         else:
             return self.image.name
           
-def get_title(element_texts):
-    title = [t['text'] for t in element_texts if t['element_set']['name'] == "Dublin Core"][0].strip()
-    return title
+def get_title(omeka_object):
+    if omeka_object['element_texts']:
+        title = [t['text'] for t in omeka_object['element_texts'] if t['element_set']['name'] == "Dublin Core"][0].strip()
+        return title
+    else:
+        return None
       
 @receiver(post_save, sender=Repository)
 def get_repository_collections(instance, **kwargs):
@@ -67,12 +67,12 @@ def get_repository_collections(instance, **kwargs):
     for c in collections_json:
         collection, created = Collection.objects.get_or_create(url=c['url'], repository = instance)
         collection.items_url = c['items']['url']
-        collection.title = get_title(c['element_texts'])
+        collection.title = get_title(c)
         collection.save()
     
 @receiver(pre_save, sender=Collection)
 def get_collection_deck(instance, **kwargs):
-    collection_deck, created = Deck.objects.get_or_create(title=instance.title)
+    collection_deck, created = Deck.objects.get_or_create(source=instance.url)
     print collection_deck
     instance.deck = collection_deck
 
@@ -82,22 +82,24 @@ def get_collection_items(instance, **kwargs):
         items_json = requests.get(instance.items_url).json()
         for i in items_json:
             item, created = Item.objects.get_or_create(url=i['url'], collection = instance)
-            item.title = get_title(i['element_texts'])
+            item.title = get_title(i)
             item.files_url = i['files']['url']
             item.save()
 
 @receiver(pre_save, sender=Item)
 def get_item_case(instance, **kwargs):
-    item_case, created = Case.objects.get_or_create(title=instance.title)
+    item_case, created = Case.objects.get_or_create(source=instance.url)
     if instance.collection:
         item_case.decks.add(instance.collection.deck)
         item_case.save()
-    print item_case
     instance.case = item_case
                     
 @receiver(post_save, sender=Item)
 def get_item_images(instance, **kwargs):
     if instance.files_url:
         files_json = requests.get(instance.files_url).json()
-        #for f in files_json:
-            #print f
+        for f in files_json:
+            print f
+            card_title = get_title(f)
+            print card_title
+            card, created = Card.objects.get_or_create(title=card_title)
